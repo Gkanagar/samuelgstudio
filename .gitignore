@@ -1,0 +1,13 @@
+# Private originals (Picture 2 shows a phone number) - never publish
+Picture 1.png
+Picture 2.png
+
+# Old banner image, no longer used on the site
+images/hero.jpg
+
+# Logo design exploration sheets (internal work, not part of the website)
+logo/*.html
+
+# Local tool settings and Mac clutter
+.claude/
+.DS_Store
