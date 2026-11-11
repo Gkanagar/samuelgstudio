@@ -11,3 +11,6 @@ logo/*.html
 # Local tool settings and Mac clutter
 .claude/
 .DS_Store
+
+# Marketing images (kept locally, shared by hand)
+marketing/
