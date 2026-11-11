@@ -3,7 +3,7 @@
 // ---- Launch switch ----
 // false = "Orders opening soon": visitors can browse and try the form, but can't submit an order.
 // Change to true once Stripe payments are connected.
-const ORDERS_OPEN = false;
+const ORDERS_OPEN = true;
 document.body.classList.toggle("orders-soon", !ORDERS_OPEN);
 
 // ---- Pricing (change these to update the whole site) ----
