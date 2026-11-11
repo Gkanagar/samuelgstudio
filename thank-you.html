@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thank you | Samuel G Creative Studio</title>
+  <meta name="description" content="Thank you for your order with Samuel G Creative Studio." />
+  <meta name="robots" content="noindex" />  <!-- keep this page out of search results -->
+  <meta name="theme-color" content="#fcfaf7" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=5" />
+</head>
+<body>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand" aria-label="Samuel G Creative Studio home">
+        <img class="brand-symbol" src="logo/samuelg-symbol-orange.svg" alt="" width="36" height="36" />
+        <span class="brand-words"><span class="brand-name">SAMUEL G</span><span class="brand-sub">CREATIVE STUDIO</span></span>
+      </a>
+      <nav class="nav-links" id="nav-links">
+        <a href="index.html#collection">Collection</a>
+        <a href="index.html#how">How it works</a>
+        <a href="index.html#artist">The Artist</a>
+        <a href="index.html#faq">FAQ</a>
+      </nav>
+      <a href="index.html#order" class="btn btn-primary btn-sm nav-cta">Order</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false"><span></span><span></span></button>
+    </div>
+  </header>
+
+  <main class="thanks">
+    <img class="thanks-icon" src="logo/samuelg-symbol-orange.svg" alt="" />
+    <h1>Thank you!</h1>
+    <p class="lead" id="thanks-lead">Your order is confirmed, and your card will soon be drawn by hand, just for them.</p>
+
+    <div class="thanks-card">
+      <h2>What happens next</h2>
+      <ol>
+        <li><strong>Receipt:</strong> Stripe has emailed your payment receipt.</li>
+        <li><strong>Drawing:</strong> your card is designed and drawn by hand from the details you gave us.</li>
+        <li><strong>Posting:</strong> we post it by Royal Mail in time for <span id="thanks-date">the date you asked for</span>.</li>
+      </ol>
+      <p style="margin:18px 0 0;color:var(--muted)" id="thanks-ref-line">Questions? Email <a href="mailto:hello@samuelgstudio.co.uk">hello@samuelgstudio.co.uk</a>.</p>
+    </div>
+
+    <a href="index.html" class="link-arrow back-link">Back to Samuel G Creative Studio</a>
+  </main>
+  <script>
+    // Show the order reference saved just before checkout (if any)
+    try {
+      const o = JSON.parse(sessionStorage.getItem("sg-order") || "null");
+      if (o) {
+        if (o.recipient) document.getElementById("thanks-lead").textContent = `Your order is confirmed, and ${o.recipient}'s card will soon be drawn by hand, just for them.`;
+        if (o.date) document.getElementById("thanks-date").textContent = o.date;
+        if (o.ref) document.getElementById("thanks-ref-line").innerHTML = `Your order reference is <span class="thanks-ref">${o.ref}</span>. Questions? Email <a href="mailto:hello@samuelgstudio.co.uk">hello@samuelgstudio.co.uk</a> and quote it.`;
+        sessionStorage.removeItem("sg-order");
+      }
+    } catch (_) {}
+  </script>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="brand">
+          <img class="brand-symbol" src="logo/samuelg-symbol-orange.svg" alt="" width="34" height="34" />
+          <span class="brand-words"><span class="brand-name">SAMUEL G</span><span class="brand-sub">CREATIVE STUDIO</span></span>
+        </div>
+        <p>Designed &amp; handcrafted by a young artist.</p>
+      </div>
+      <div class="footer-links">
+        <a href="index.html#collection">Collection</a>
+        <a href="index.html#how">How it works</a>
+        <a href="index.html#order">Order</a>
+        <a href="index.html#faq">FAQ</a>
+        <a href="mailto:hello@samuelgstudio.co.uk">hello@samuelgstudio.co.uk</a>
+      </div>
+    </div>
+    <nav class="legal-links" aria-label="Policies">
+      <a href="delivery.html">Delivery</a>
+      <a href="returns.html">Returns &amp; refunds</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </nav>
+    <p class="legal">© <span id="year"></span> Samuel G Creative Studio. All cards are original, hand-drawn artwork.</p>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>

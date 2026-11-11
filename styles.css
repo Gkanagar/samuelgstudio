@@ -361,3 +361,21 @@ body.orders-soon .soon-only { display: block; }
 .policy .summary p { margin: 0; color: var(--ink); }
 .todo { background: #ffe9a8; color: #5a4300; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
 .back-link { display: inline-block; margin-top: 48px; }
+
+/* ===== Stripe checkout hand-off ===== */
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.next-step { background: var(--grey); border-radius: var(--radius-sm); padding: 16px 18px; margin: 0 0 20px; }
+.next-step p { margin: 0; color: var(--muted); font-size: 15px; }
+.next-step .next-title { margin-bottom: 6px; font-family: "Jost", var(--font); font-size: 12px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+.order-status { text-align: center; color: #b3261e; font-size: 14px; margin: 10px 0 0; min-height: 0; }
+.order-status:empty { display: none; }
+
+/* ===== Thank-you page ===== */
+.thanks { max-width: 640px; margin: 0 auto; padding: 96px 22px 110px; text-align: center; }
+.thanks-icon { width: 76px; height: 76px; margin: 0 auto 26px; }
+.thanks h1 { font-size: clamp(36px, 6vw, 54px); letter-spacing: -0.04em; line-height: 1.06; }
+.thanks .lead { color: var(--muted); font-size: 20px; margin: 18px 0 0; }
+.thanks-card { background: var(--card); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); padding: 28px 30px; margin: 40px 0 0; text-align: left; }
+.thanks-card h2 { font-size: 19px; margin-bottom: 14px; }
+.thanks-card ol { margin: 0; padding-left: 1.2em; color: #3a3a3c; line-height: 1.7; }
+.thanks-ref { display: inline-block; font-family: "Jost", var(--font); letter-spacing: 0.12em; background: var(--grey); border-radius: 8px; padding: 2px 10px; color: var(--ink); }

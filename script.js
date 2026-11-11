@@ -7,9 +7,14 @@ const ORDERS_OPEN = false;
 document.body.classList.toggle("orders-soon", !ORDERS_OPEN);
 
 // ---- Pricing (change these to update the whole site) ----
-const PRICE_PER_CARD = 4.5;   // £ per card, standard UK delivery included
+const PRICE_PER_CARD = 4.5;   // £ per card, standard UK delivery included (must match the Stripe product)
 const MIN_LEAD_DAYS = 5;      // drawing time + Royal Mail 2nd Class
-const MAX_CARDS = 20;
+
+// ---- Ordering ----
+// Stripe Payment Link: quantity, delivery option, address and payment happen here.
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/3cI5kwbJFbjw1OKfe6gnK00";
+// Web3Forms access key: emails each card brief to hello@samuelgstudio.co.uk (safe to be public).
+const WEB3FORMS_KEY = "03e20b35-80df-4057-b6e1-cac23750d079";
 
 const gbp = (n) => `£${n.toFixed(2)}`;
 
@@ -55,59 +60,43 @@ if ("IntersectionObserver" in window) {
 }
 
 // ---- Order form (home page only) ----
-if (document.getElementById("order-form")) {
-  const form = document.getElementById("order-form");
-  const done = document.getElementById("order-done");
-  const preview = document.getElementById("order-preview");
+// 1. Customer fills in the card brief here.
+// 2. The brief is emailed to us (Web3Forms) with an order reference.
+// 3. Customer goes to Stripe checkout; the same reference is attached to the payment.
+const form = document.getElementById("order-form");
+if (form) {
   const dateInput = document.getElementById("date");
-  const qtyInput = document.getElementById("qty");
+  const payBtn = document.getElementById("pay-btn");
+  const statusEl = document.getElementById("order-status");
 
   // Earliest "needed by" date
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + MIN_LEAD_DAYS);
   dateInput.min = minDate.toISOString().split("T")[0];
 
-  const deliveryFee = () => Number(form.querySelector('input[name="delivery"]:checked').dataset.fee);
-
-  const clampQty = () => {
-    const n = Math.min(MAX_CARDS, Math.max(1, parseInt(qtyInput.value, 10) || 1));
-    qtyInput.value = n;
-    return n;
-  };
-
-  const updateTotals = () => {
-    const qty = clampQty();
-    const sub = qty * PRICE_PER_CARD;
-    const fee = deliveryFee();
-    document.getElementById("sub-label").textContent = `${qty} card${qty > 1 ? "s" : ""} × ${gbp(PRICE_PER_CARD)}`;
-    document.getElementById("subtotal").textContent = gbp(sub);
-    document.getElementById("delivery-fee").textContent = fee ? gbp(fee) : "Free";
-    document.getElementById("total").textContent = gbp(sub + fee);
-    return { qty, sub, fee, total: sub + fee };
-  };
-
-  document.querySelectorAll(".step-btn").forEach((btn) =>
-    btn.addEventListener("click", () => {
-      qtyInput.value = (parseInt(qtyInput.value, 10) || 1) + Number(btn.dataset.step);
-      updateTotals();
-    })
-  );
-  qtyInput.addEventListener("change", updateTotals);
-  form.querySelectorAll('input[name="delivery"]').forEach((r) => r.addEventListener("change", updateTotals));
-  updateTotals();
-
-  form.addEventListener("input", (e) => e.target.classList.remove("invalid"));
-
-  const payBtn = document.getElementById("pay-btn");
   if (!ORDERS_OPEN) {
     payBtn.disabled = true;
     payBtn.textContent = "Orders opening soon";
   }
 
-  form.addEventListener("submit", (e) => {
+  // Short, readable reference, e.g. SG-261111-K7QF (letters chosen to avoid 0/O and 1/I mix-ups)
+  const makeRef = () => {
+    const d = new Date(), pad = (n) => String(n).padStart(2, "0");
+    const abc = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < 4; i++) code += abc[Math.floor(Math.random() * abc.length)];
+    return `SG-${String(d.getFullYear()).slice(2)}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${code}`;
+  };
+  const prettyDate = (iso) =>
+    new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
+
+  form.addEventListener("input", (e) => e.target.classList.remove("invalid"));
+
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!ORDERS_OPEN) return;
 
+    // Friendly validation
     let firstBad = null;
     form.querySelectorAll("[required]").forEach((el) => {
       let ok = el.checkValidity() && el.value.trim() !== "";
@@ -122,34 +111,50 @@ if (document.getElementById("order-form")) {
     }
 
     const d = new FormData(form);
-    const t = updateTotals();
-    const address = [d.get("addr1"), d.get("addr2"), d.get("town"), d.get("postcode").toUpperCase()].filter(Boolean).join(", ");
+    const ref = makeRef();
+    const brief = {
+      access_key: WEB3FORMS_KEY,
+      subject: `New card order ${ref}: ${d.get("occasion")} for ${d.get("recipient")}`,
+      from_name: "Samuel G website",
+      replyto: d.get("email"),
+      botcheck: d.get("botcheck") ? "on" : "",
+      "Order reference": ref,
+      "Occasion": d.get("occasion"),
+      "Name on card": d.get("recipient"),
+      "Their age": d.get("age") || "-",
+      "They love": d.getAll("likes").join(", ") || "-",
+      "Details & message": d.get("message") || "-",
+      "Needed by": prettyDate(d.get("date")),
+      "Customer name": d.get("name"),
+      "Customer email": d.get("email"),
+      "Customer phone": d.get("phone") || "-",
+      "Next": "Match this reference to the payment in Stripe (Payments > Client reference ID). Quantity, delivery option and address are in Stripe.",
+    };
 
-    // TODO (next step): send this order to Stripe Checkout instead of showing a preview.
-    preview.textContent =
-      `Occasion:    ${d.get("occasion")}\n` +
-      `For:         ${d.get("recipient")}${d.get("age") ? ` (age ${d.get("age")})` : ""}\n` +
-      `Loves:       ${d.getAll("likes").join(", ") || "-"}\n` +
-      `Details:     ${d.get("message") || "-"}\n` +
-      `Needed by:   ${d.get("date")}\n` +
-      `Cards:       ${t.qty} × ${gbp(PRICE_PER_CARD)} = ${gbp(t.sub)}\n` +
-      `Delivery:    ${d.get("delivery")} (${t.fee ? gbp(t.fee) : "free"})\n` +
-      `Send to:     ${address}${d.get("toRecipient") ? " (directly to recipient)" : ""}\n` +
-      `Your details: ${d.get("name")}, ${d.get("email")}${d.get("phone") ? ", " + d.get("phone") : ""}\n` +
-      `Total:       ${gbp(t.total)}`;
+    payBtn.disabled = true;
+    payBtn.textContent = "Saving your card details…";
+    statusEl.textContent = "";
 
-    form.hidden = true;
-    done.hidden = false;
-    done.scrollIntoView({ behavior: "smooth", block: "start" });
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(brief),
+      });
+      const out = await res.json();
+      if (!res.ok || !out.success) throw new Error(out.message || "Could not send");
+
+      // Remember for the thank-you page, then go to Stripe
+      try { sessionStorage.setItem("sg-order", JSON.stringify({ ref, recipient: d.get("recipient"), date: prettyDate(d.get("date")) })); } catch (_) {}
+      payBtn.textContent = "Opening secure checkout…";
+      const url = new URL(STRIPE_PAYMENT_LINK);
+      url.searchParams.set("client_reference_id", ref);
+      url.searchParams.set("prefilled_email", d.get("email"));
+      window.location.href = url.toString();
+    } catch (err) {
+      payBtn.disabled = false;
+      payBtn.textContent = "Continue to secure checkout";
+      statusEl.innerHTML = 'Sorry, something went wrong saving your card details. Please try again, or email <a href="mailto:hello@samuelgstudio.co.uk">hello@samuelgstudio.co.uk</a>.';
+    }
   });
-
-  document.getElementById("order-again").addEventListener("click", () => {
-    form.reset();
-    form.querySelectorAll(".invalid").forEach((el) => el.classList.remove("invalid"));
-    updateTotals();
-    done.hidden = true;
-    form.hidden = false;
-    form.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-
 }

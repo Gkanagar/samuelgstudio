@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Jost:wght@300;400;500&family=Caveat:wght@600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
 
@@ -218,66 +218,16 @@
         </div>
 
         <div class="panel">
-          <h3 class="panel-title"><span>2</span> Quantity &amp; date</h3>
-          <div class="row">
-            <div class="field">
-              <label for="date">Needed by</label>
-              <input id="date" name="date" type="date" required />
-              <small>Please allow at least 5 days for drawing and posting.</small>
-            </div>
-            <div class="field field-sm">
-              <label for="qty">Cards</label>
-              <div class="stepper">
-                <button type="button" class="step-btn" data-step="-1" aria-label="One fewer">−</button>
-                <input id="qty" name="qty" type="number" min="1" max="20" value="1" />
-                <button type="button" class="step-btn" data-step="1" aria-label="One more">+</button>
-              </div>
-            </div>
+          <h3 class="panel-title"><span>2</span> When do you need it?</h3>
+          <div class="field">
+            <label for="date">Needed by</label>
+            <input id="date" name="date" type="date" required />
+            <small>Please allow at least 5 days for drawing and posting.</small>
           </div>
         </div>
 
         <div class="panel">
-          <h3 class="panel-title"><span>3</span> Delivery</h3>
-          <div class="options">
-            <label class="option">
-              <input type="radio" name="delivery" value="Royal Mail 2nd Class" data-fee="0" checked />
-              <span class="option-body">
-                <span class="option-name">Standard UK delivery</span>
-                <span class="option-desc">Royal Mail 2nd Class, usually 2–3 working days</span>
-              </span>
-              <span class="option-price">Free</span>
-            </label>
-            <label class="option">
-              <input type="radio" name="delivery" value="Royal Mail 1st Class" data-fee="1" />
-              <span class="option-body">
-                <span class="option-name">Express UK delivery</span>
-                <span class="option-desc">Royal Mail 1st Class, usually next working day</span>
-              </span>
-              <span class="option-price">+£1.00</span>
-            </label>
-          </div>
-          <div class="field">
-            <label for="addr1">Address</label>
-            <input id="addr1" name="addr1" type="text" autocomplete="address-line1" placeholder="House number and street" required />
-          </div>
-          <div class="field">
-            <input id="addr2" name="addr2" type="text" autocomplete="address-line2" placeholder="Flat, building (optional)" aria-label="Address line 2" />
-          </div>
-          <div class="row">
-            <div class="field">
-              <label for="town">Town / City</label>
-              <input id="town" name="town" type="text" autocomplete="address-level2" required />
-            </div>
-            <div class="field field-sm">
-              <label for="postcode">Postcode</label>
-              <input id="postcode" name="postcode" type="text" autocomplete="postal-code" required />
-            </div>
-          </div>
-          <label class="check"><input type="checkbox" name="toRecipient" value="yes" /> Send directly to the recipient</label>
-        </div>
-
-        <div class="panel">
-          <h3 class="panel-title"><span>4</span> Your details</h3>
+          <h3 class="panel-title"><span>3</span> Your details</h3>
           <div class="row">
             <div class="field">
               <label for="name">Your name</label>
@@ -292,27 +242,26 @@
             <label for="phone">Phone <em>optional</em></label>
             <input id="phone" name="phone" type="tel" autocomplete="tel" />
           </div>
+          <!-- spam trap: real people never see or fill this -->
+          <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
         </div>
 
         <div class="checkout">
           <div class="totals">
-            <div class="total-line"><span id="sub-label">1 card</span><span id="subtotal">£4.50</span></div>
-            <div class="total-line"><span>Delivery</span><span id="delivery-fee">Free</span></div>
-            <div class="total-line total"><span>Total</span><span id="total">£4.50</span></div>
+            <div class="total-line"><span>Hand-drawn card</span><span><span class="price-each">£4.50</span> each</span></div>
+            <div class="total-line"><span>Standard UK delivery</span><span>Free</span></div>
+            <div class="total-line"><span>Express UK delivery</span><span>+£1.00</span></div>
           </div>
-          <button type="submit" id="pay-btn" class="btn btn-primary btn-lg btn-block">Continue to payment</button>
-          <p class="secure">Secure payment by Stripe. We never see your card details.</p>
+          <div class="next-step">
+            <p class="next-title">Next: secure checkout</p>
+            <p>On the next page you'll choose <strong>how many cards</strong>, <strong>Standard or Express delivery</strong>, and the <strong>delivery address</strong> (yours, or send it straight to the recipient), then pay.</p>
+          </div>
+          <button type="submit" id="pay-btn" class="btn btn-primary btn-lg btn-block">Continue to secure checkout</button>
+          <p id="order-status" class="order-status" role="status" aria-live="polite"></p>
+          <p class="secure">Secure payment by Stripe. Pay by card, Apple Pay or Google Pay.</p>
           <p class="policy-note">By ordering you agree to our <a href="terms.html">Terms</a>. See <a href="delivery.html">Delivery</a> and <a href="returns.html">Returns &amp; refunds</a>.</p>
         </div>
       </form>
-
-      <div id="order-done" class="order done" hidden>
-        <div class="done-icon">✓</div>
-        <h3>Thank you. Here's your order.</h3>
-        <pre id="order-preview"></pre>
-        <p class="draft-note">Draft site: payment isn't connected yet. Next step: link this button to Stripe Checkout.</p>
-        <button type="button" id="order-again" class="btn btn-secondary">Start another order</button>
-      </div>
     </section>
 
     <!-- ===== FAQ ===== -->
