@@ -1,0 +1,23 @@
+// ============================================================
+//  SAMUEL G CREATIVE STUDIO: SHOP AVAILABILITY
+//  This is the only file you need to edit to pause orders or
+//  block dates. Dates are written "YYYY-MM-DD" (year-month-day).
+// ============================================================
+
+const SHOP = {
+  // true = taking orders.  false = orders paused (the order button is switched off).
+  ordersOpen: true,
+
+  // Shown across the site while orders are paused (ordersOpen: false).
+  pausedTitle: "Orders paused",
+  pausedMessage: "We're taking a short break. Orders will reopen soon!",
+
+  // Days when we can't draw or post cards (holidays, busy days).
+  // Orders stay open, but customers can't pick a "needed by" date we can't meet,
+  // and a notice tells them when cards will be posted.
+  // For a single day, use the same date for "from" and "to".
+  away: [
+    // { from: "2026-12-22", to: "2026-12-29", reason: "Christmas break" },
+    // { from: "2027-02-14", to: "2027-02-14", reason: "Busy day" },
+  ],
+};

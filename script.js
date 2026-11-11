@@ -1,14 +1,56 @@
 // Samuel G Creative Studio: site behaviour
 
-// ---- Launch switch ----
-// false = "Orders opening soon": visitors can browse and try the form, but can't submit an order.
-// Change to true once Stripe payments are connected.
-const ORDERS_OPEN = true;
+// ---- Availability (edit availability.js, not this file) ----
+const SHOP_CFG = typeof SHOP !== "undefined" ? SHOP : { ordersOpen: true, away: [] };
+const ORDERS_OPEN = SHOP_CFG.ordersOpen !== false;
 document.body.classList.toggle("orders-soon", !ORDERS_OPEN);
+if (!ORDERS_OPEN && SHOP_CFG.pausedMessage) {
+  document.querySelectorAll(".soon-bar").forEach((el) => (el.textContent = SHOP_CFG.pausedMessage));
+  document.querySelectorAll(".soon-notice").forEach((el) => {
+    const t = el.querySelector(".soon-title"), p = el.querySelector("p:not(.soon-title)");
+    if (t && SHOP_CFG.pausedTitle) t.textContent = SHOP_CFG.pausedTitle;
+    if (p) p.textContent = SHOP_CFG.pausedMessage;
+  });
+}
+
+// ---- Away dates: days we can't draw or post ----
+const DRAW_DAYS = 2;   // days needed to draw a card after ordering
+const POST_DAYS = 3;   // Royal Mail 2nd Class
+const dayKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const parseDay = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const AWAY = (SHOP_CFG.away || []).filter((r) => r && r.from && r.to);
+const isAway = (d) => { const k = dayKey(d); return AWAY.some((r) => k >= r.from && k <= r.to); };
+const today0 = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; };
+// Can a card needed on `neededBy` be drawn and posted on a day we're not away?
+const canFulfil = (neededBy) => {
+  for (let w = addDays(today0(), DRAW_DAYS); w <= addDays(neededBy, -POST_DAYS); w = addDays(w, 1)) if (!isAway(w)) return true;
+  return false;
+};
+const earliestNeededBy = () => {
+  let d = addDays(today0(), DRAW_DAYS + POST_DAYS);
+  for (let i = 0; i < 400 && !canFulfil(d); i++) d = addDays(d, 1);
+  return d;
+};
+const niceDay = (d) => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "long" });
+
+// Holiday notice under the header, shown from 6 weeks before an away period until it ends
+if (ORDERS_OPEN) {
+  const soon = AWAY.filter((r) => parseDay(r.to) >= today0() && parseDay(r.from) <= addDays(today0(), 42))
+                   .sort((a, b) => a.from.localeCompare(b.from))[0];
+  const header = document.getElementById("nav");
+  if (soon && header) {
+    const from = parseDay(soon.from), to = parseDay(soon.to);
+    const range = soon.from === soon.to ? niceDay(from) : `${niceDay(from)} to ${niceDay(to)}`;
+    const bar = document.createElement("div");
+    bar.className = "away-bar";
+    bar.textContent = `We're away ${range}. You can still order: cards will be posted from ${niceDay(addDays(to, 1))}.`;
+    header.insertAdjacentElement("afterend", bar);
+  }
+}
 
 // ---- Pricing (change these to update the whole site) ----
 const PRICE_PER_CARD = 4.5;   // £ per card, standard UK delivery included (must match the Stripe product)
-const MIN_LEAD_DAYS = 5;      // drawing time + Royal Mail 2nd Class
 
 // ---- Ordering ----
 // Stripe Payment Link: quantity, delivery option, address and payment happen here.
@@ -70,13 +112,23 @@ if (form) {
   const statusEl = document.getElementById("order-status");
 
   // Earliest "needed by" date
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() + MIN_LEAD_DAYS);
-  dateInput.min = minDate.toISOString().split("T")[0];
+  const earliest = earliestNeededBy();
+  dateInput.min = dayKey(earliest);
+  const dateHint = dateInput.parentElement.querySelector("small");
+  const defaultHint = dateHint ? dateHint.textContent : "";
+  const checkDate = () => {
+    if (!dateInput.value) { if (dateHint) dateHint.textContent = defaultHint; return true; }
+    const ok = dateInput.value >= dateInput.min && canFulfil(parseDay(dateInput.value));
+    if (dateHint) dateHint.textContent = ok ? defaultHint
+      : `Sorry, we can't get a card to you by then. The earliest date we can do is ${niceDay(earliest)}, or choose a date after our time away.`;
+    dateHint && dateHint.classList.toggle("date-warn", !ok);
+    return ok;
+  };
+  dateInput.addEventListener("change", checkDate);
 
   if (!ORDERS_OPEN) {
     payBtn.disabled = true;
-    payBtn.textContent = "Orders opening soon";
+    payBtn.textContent = SHOP_CFG.pausedTitle || "Orders paused";
   }
 
   // Short, readable reference, e.g. SG-261111-K7QF (letters chosen to avoid 0/O and 1/I mix-ups)
@@ -100,7 +152,7 @@ if (form) {
     let firstBad = null;
     form.querySelectorAll("[required]").forEach((el) => {
       let ok = el.checkValidity() && el.value.trim() !== "";
-      if (el === dateInput && el.value && el.value < el.min) ok = false;
+      if (el === dateInput && el.value && !checkDate()) ok = false;
       el.classList.toggle("invalid", !ok);
       if (!ok && !firstBad) firstBad = el;
     });
