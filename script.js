@@ -44,7 +44,7 @@ if (ORDERS_OPEN) {
     const range = soon.from === soon.to ? niceDay(from) : `${niceDay(from)} to ${niceDay(to)}`;
     const bar = document.createElement("div");
     bar.className = "away-bar";
-    bar.textContent = `We're away ${range}. You can still order: cards will be posted from ${niceDay(addDays(to, 1))}.`;
+    bar.textContent = soon.notice || `We're away ${range}. You can still order: cards will be posted from ${niceDay(addDays(to, 1))}.`;
     header.insertAdjacentElement("afterend", bar);
   }
 }

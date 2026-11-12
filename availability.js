@@ -16,8 +16,13 @@ const SHOP = {
   // Orders stay open, but customers can't pick a "needed by" date we can't meet,
   // and a notice tells them when cards will be posted.
   // For a single day, use the same date for "from" and "to".
+  // Optional "notice": your own wording for the notice bar (otherwise one is written for you).
   away: [
-    { from: "2026-12-19", to: "2027-01-03", reason: "Christmas break (Royal Mail 2nd Class last posting 18 Dec)" },
+    {
+      from: "2026-12-17", to: "2027-01-03",
+      reason: "Christmas: last orders 14 Dec, posted by 16 Dec (Royal Mail 2nd Class last posting 18 Dec)",
+      notice: "🎄 Order by Monday 14 December for delivery before Christmas. Orders after that are posted from Monday 4 January.",
+    },
     // { from: "2027-02-14", to: "2027-02-14", reason: "Busy day" },
   ],
 };
