@@ -17,7 +17,7 @@ const SHOP = {
   // and a notice tells them when cards will be posted.
   // For a single day, use the same date for "from" and "to".
   away: [
-    // { from: "2026-12-22", to: "2026-12-29", reason: "Christmas break" },
+    { from: "2026-12-19", to: "2027-01-03", reason: "Christmas break (Royal Mail 2nd Class last posting 18 Dec)" },
     // { from: "2027-02-14", to: "2027-02-14", reason: "Busy day" },
   ],
 };
