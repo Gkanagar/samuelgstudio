@@ -139,6 +139,9 @@ if (form) {
     for (let i = 0; i < 4; i++) code += abc[Math.floor(Math.random() * abc.length)];
     return `SG-${String(d.getFullYear()).slice(2)}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${code}`;
   };
+  // e.g. "Tue 24 Nov": short enough to lead an email subject / Trello card title
+  const shortDate = (iso) =>
+    new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
   const prettyDate = (iso) =>
     new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
 
@@ -166,7 +169,7 @@ if (form) {
     const ref = makeRef();
     const brief = {
       access_key: WEB3FORMS_KEY,
-      subject: `New card order ${ref}: ${d.get("occasion")} for ${d.get("recipient")}`,
+      subject: `Needed ${shortDate(d.get("date"))} · ${ref} · ${d.get("occasion")} for ${d.get("recipient")}`,
       from_name: "Samuel G website",
       replyto: d.get("email"),
       botcheck: d.get("botcheck") ? "on" : "",
